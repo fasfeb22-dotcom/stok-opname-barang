@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Stok Opname Alfamart</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#f5f5f5;
+}
+header{
+    background:#d6001c;
+    color:#fff;
+    padding:12px;
+    text-align:center;
+    font-weight:bold;
+}
+.container{ padding:15px; }
+
+.card{
+    background:#fff;
+    border-radius:12px;
+    padding:15px;
+    margin-bottom:15px;
+    box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+
+.btn{
+    padding:8px 12px;
+    background:#ffd200;
+    border:none;
+    font-weight:bold;
+    border-radius:8px;
+    font-size:14px;
+    cursor:pointer;
+    transition:0.2s;
+}
+.btn:hover{
+    opacity:0.85;
+}
+
+#home img{
+    width:100%;
+    height:40vh;
+    object-fit:cover;
+    border-radius:12px;
+}
+
+/* Kalender */
+.calendar{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:6px;
+}
+.day{ font-size:11px; text-align:center; color:#666; }
+.date{
+    background:#eee;
+    padding:10px 0;
+    text-align:center;
+    border-radius:6px;
+    font-weight:bold;
+    cursor:pointer;
+}
+.date.active{
+    background:#d6001c;
+    color:#fff;
+}
+
+/* Menu bawah */
+.menu-inline{
+    display:flex;
+    margin-top:15px;
+    background:#ffd200;
+    border-radius:8px;
+    overflow:hidden;
+}
+.menu-inline button{
+    flex:1;
+    border:none;
+    background:transparent;
+    padding:14px;
+    font-weight:bold;
+}
+.menu-inline button:not(:last-child){
+    border-right:2px solid #e0b800;
+}
+
+/* modal */
+#modal, #laporanModal, #modalKonfirmasi, #modalLogin, #modalLoading{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.4);
+    align-items:center;
+    justify-content:center;
+    z-index:10;
+}
+
+.footer{
+    text-align:center;
+    font-size:12px;
+    color:#777;
+    margin:15px;
+}
+
+/* List Rak / Barang */
+.list-rak li, .list-barang .card-barang{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px 15px;
+    margin-bottom:10px;
+    border-radius:10px;
+    background:#fdf5d8;
+    box-shadow:0 1px 4px rgba(0,0,0,.1);
+}
+.list-rak li span{
+    font-weight:bold;
+}
+.list-rak li button{
+    width:60px;
+    background:#d6001c;
+    color:#fff;
+    font-weight:bold;
+    font-size:12px;
+    cursor:pointer;
+}
+
+/* Barang KKSO */
+.list-barang .card-barang .aksi-barang button{
+    margin-left:5px;
+    width:35px;
+    height:30px;
+    font-size:14px;
+    padding:0;
+    border:none;
+    border-radius:6px;
+    background:transparent;
+    cursor:pointer;
+    transition:0.2s;
+}
+.list-barang .aksi-barang button:hover{
+    background:#ffd200;
+}
+
+/* Laporan Cetak */
+#laporanContent{
+    max-height:70vh;
+    overflow:auto;
+}
+#laporanContent table{
+    width:100%;
+    border-collapse:collapse;
+}
+#laporanContent th, #laporanContent td{
+    border:1px solid #ccc;
+    padding:6px;
+    text-align:left;
+    font-size:13px;
+}
+#laporanContent th{
+    background:#ffd200;
+}
+
+/* Modal konfirmasi PLU */
+#modalKonfirmasi .card{
+    width:90%;
+    max-height:80vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+}
+#modalKonfirmasi input[type="text"], #modalKonfirmasi input[type="number"]{
+    padding:6px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    font-size:16px;
+}
+#modalKonfirmasi .qty-container{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    margin:15px 0;
+}
+#modalKonfirmasi .qty-container input{
+    width:60px;
+    text-align:center;
+    font-size:18px;
+}
+#modalKonfirmasi .qty-container button{
+    width:40px;
+    height:35px;
+    font-size:16px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    background:#ffd200;
+}
+
+/* Tombol kembali */
+.back-btn{
+    margin-top:10px;
+    background:#ccc;
+    color:#000;
+}
+
+/* Modal Login */
+#modalLogin .card{
+    width:300px;
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    border-radius:12px;
+    background:#fff;
+    text-align:center;
+}
+#modalLogin input{
+    padding:8px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    font-size:14px;
+}
+
+/* Modal Loading */
+#modalLoading{
+    background:rgba(0,0,0,0.2);
+}
+#modalLoading .spinner{
+    border:5px solid #f3f3f3;
+    border-top:5px solid #d6001c;
+    border-radius:50%;
+    width:50px;
+    height:50px;
+    animation:spin 1s linear infinite;
+}
+@keyframes spin{
+    0% {transform:rotate(0deg);}
+    100% {transform:rotate(360deg);}
+}
+</style>
+</head>
+<body>
+
+<header>STOK OPNAME ALFAMART</header>
+
+<div class="container">
+
+<!-- HOME -->
+<div class="card" id="home">
+    <img src="foto.jpg">
+    <button class="btn" onclick="bukaLogin()">MASUK APLIKASI</button>
+</div>
+
+<!-- BERANDA -->
+<div class="card" id="beranda" style="display:none">
+    <h3 style="text-align:center;color:#d6001c">Pilih Tanggal SO</h3>
+    <div id="bulan" style="text-align:center;font-weight:bold"></div>
+    <div class="calendar" id="calendar"></div>
+
+    <div class="menu-inline">
+        <button onclick="loadingFungsi(keKKSO)">📄 CETAK KKSO</button>
+        <button onclick="loadingFungsi(alertJadwal)">📅 CEK JADWAL</button>
+        <button onclick="loadingFungsi(keUtility)">🧰 UTILITY</button>
+    </div>
+</div>
+
+<!-- KKSO -->
+<div id="kkso" style="display:none">
+    <div class="card" style="text-align:center;background:#d6001c;color:#fff">
+        <b>STOK OPNAME PARSIAL</b>
+        <div id="judulTanggal"></div>
+    </div>
+
+    <div class="card">
+        <label>Pilih Rak</label>
+        <select id="pilihRak"></select>
+    </div>
+
+    <div class="card" style="display:flex;gap:10px">
+        <input id="inputPlu" placeholder="Input PLU / Barcode" onkeydown="if(event.key==='Enter') loadingFungsi(konfirmasiPlu)">
+        <button class="btn" style="width:70px" onclick="loadingFungsi(konfirmasiPlu)">🔍</button>
+    </div>
+
+    <div id="listBarang" class="list-barang"></div>
+
+    <!-- Tombol simpan & cetak -->
+    <button class="btn" onclick="loadingFungsi(cetakLaporan)">💾 SIMPAN & CETAK</button>
+    
+    <!-- Tombol Kembali -->
+    <button class="btn back-btn" onclick="kembaliBeranda()">⬅️ KEMBALI</button>
+</div>
+
+<!-- UTILITY -->
+<div id="utility" style="display:none">
+    <div class="card" style="text-align:center;background:#ffd200">
+        <b>UTILITY</b>
+    </div>
+
+    <div class="card">
+        <label>Tambah Rak Baru</label>
+        <input id="rakBaru" placeholder="Contoh: RAK MINUMAN">
+        <button class="btn" onclick="loadingFungsi(tambahRak)">➕ TAMBAH RAK</button>
+    </div>
+
+    <div id="listRak" class="list-barang"></div>
+
+    <!-- Tombol Kembali -->
+    <button class="btn back-btn" onclick="kembaliBeranda()">⬅️ KEMBALI</button>
+</div>
+
+</div>
+
+<!-- MODAL KONFIRMASI PLU -->
+<div id="modalKonfirmasi">
+<div class="card">
+    <h4 id="kPlu"></h4>
+    <label>Nama Barang:</label>
+    <input id="kNama" type="text" value="">
+    <div class="qty-container">
+        <button onclick="ubahQtyKonfirmasi(-1)">−</button>
+        <input id="kQty" type="number" value="0">
+        <button onclick="ubahQtyKonfirmasi(1)">+</button>
+    </div>
+    <div style="display:flex;gap:10px">
+        <button class="btn" style="background:#ccc" onclick="tutupKonfirmasi()">BATAL</button>
+        <button class="btn" onclick="loadingFungsi(simpanKonfirmasi)">SIMPAN</button>
+    </div>
+</div>
+</div>
+
+<!-- MODAL LAPORAN -->
+<div id="laporanModal">
+<div class="card" style="width:90%; max-height:90vh; overflow:auto">
+    <h3 style="text-align:center;color:#d6001c">LAPORAN CETAK SELISIH</h3>
+    <div id="laporanContent"></div>
+    <button class="btn" style="margin-top:10px" onclick="tutupLaporan()">TUTUP</button>
+</div>
+</div>
+
+<!-- MODAL LOGIN -->
+<div id="modalLogin">
+<div class="card">
+    <h3>Login</h3>
+    <input type="text" id="loginNik" placeholder="NIK">
+    <input type="password" id="loginPass" placeholder="Password">
+    <button class="btn" onclick="loginAplikasi()">MASUK</button>
+    <button class="btn" style="background:#ccc" onclick="tutupLogin()">BATAL</button>
+</div>
+</div>
+
+<!-- MODAL LOADING -->
+<div id="modalLoading">
+<div class="spinner"></div>
+</div>
+
+<div class="footer">© Simulasi Profesional Stok Opname</div>
+
+<script>
+let tanggalDipilih="";
+let listSO = JSON.parse(localStorage.getItem("listSO")) || [];
+let rakList = JSON.parse(localStorage.getItem("rakList")) || [];
+let indexKonfirmasi=null;
+
+// --- Login ---
+function bukaLogin(){ modalLogin.style.display="flex"; }
+function tutupLogin(){ modalLogin.style.display="none"; }
+
+function loginAplikasi(){
+    let nik=document.getElementById("loginNik").value.trim();
+    let pass=document.getElementById("loginPass").value.trim();
+    if(!nik||!pass){ alert("Isi NIK dan Password"); return;}
+    loadingFungsi(keBeranda,500);
+    tutupLogin();
+}
+
+// --- Loading universal ---
+function loadingFungsi(func,delay=700){
+    modalLoading.style.display="flex";
+    setTimeout(()=>{
+        func();
+        modalLoading.style.display="none";
+    },delay);
+}
+
+// --- Kalender & Navigasi ---
+const now=new Date();
+const bulanNama=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+
+function keBeranda(){
+    home.style.display="none";
+    kkso.style.display="none";
+    utility.style.display="none";
+    beranda.style.display="block";
+    buatKalender();
+}
+
+function buatKalender(){
+    bulan.innerText=bulanNama[now.getMonth()]+" "+now.getFullYear();
+    calendar.innerHTML="";
+    ["M","S","S","R","K","J","S"].forEach(h=>{
+        calendar.innerHTML+=`<div class="day">${h}</div>`;
+    });
+    let last=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+    for(let i=1;i<=last;i++){
+        calendar.innerHTML+=`<div class="date" onclick="pilihTanggal(this)">${i}</div>`;
+    }
+}
+
+function pilihTanggal(el){
+    document.querySelectorAll(".date").forEach(d=>d.classList.remove("active"));
+    el.classList.add("active");
+    tanggalDipilih=el.innerText+" "+bulanNama[now.getMonth()]+" "+now.getFullYear();
+}
+
+function keKKSO(){
+    if(!tanggalDipilih) return alert("Pilih tanggal!");
+    beranda.style.display="none";
+    utility.style.display="none";
+    kkso.style.display="block";
+    judulTanggal.innerText="Tanggal SO: "+tanggalDipilih;
+    isiRakKKSO();
+    renderList();
+}
+
+function keUtility(){
+    beranda.style.display="none";
+    kkso.style.display="none";
+    utility.style.display="block";
+    tampilRak();
+}
+
+function kembaliBeranda(){
+    kkso.style.display="none";
+    utility.style.display="none";
+    beranda.style.display="block";
+}
+
+// --- Jadwal ---
+function alertJadwal(){ alert("Jadwal SO:\nSenin: Food\nRabu: Non Food\nJumat: Display"); }
+
+// --- Rak ---
+function tambahRak(){
+    let r = rakBaru.value.trim();
+    if(!r) return alert("Nama rak kosong");
+    rakList.push(r);
+    rakBaru.value="";
+    simpanRak();
+    tampilRak();
+}
+
+function tampilRak(){
+    listRak.innerHTML = "";
+    rakList.forEach((r,i)=>{
+        listRak.innerHTML += `
+        <div class="card-barang">
+            <span>${r}</span>
+            <button onclick="hapusRak(${i})">HAPUS</button>
+        </div>`;
+    });
+    isiRakKKSO();
+}
+
+function hapusRak(i){
+    if(confirm("Hapus rak "+rakList[i]+"? Semua barang di rak ini juga akan terhapus!")){
+        let rakDihapus = rakList[i];
+        rakList.splice(i,1);
+        listSO = listSO.filter(b => b.rak !== rakDihapus);
+        simpanLocal();
+        simpanRak();
+        tampilRak();
+        renderList();
+    }
+}
+
+function simpanRak(){ localStorage.setItem("rakList",JSON.stringify(rakList)); }
+
+function isiRakKKSO(){
+    pilihRak.innerHTML="";
+    rakList.forEach(r=>{
+        pilihRak.innerHTML += `<option>${r}</option>`;
+    });
+}
+
+// --- Barang SO ---
+function renderList(){
+    listBarang.innerHTML="";
+    listSO.filter(x=>x.tgl==tanggalDipilih).forEach((b,i)=>{
+        listBarang.innerHTML+=`
+        <div class="card-barang">
+            <div class="info-barang">
+                <b>${b.plu}</b> - ${b.nama}<br>
+                Rak: ${b.rak} | Qty: ${b.qty}
+            </div>
+            <div class="aksi-barang">
+                <button title="Edit ✏️" onclick="editBarang(${i})">✏️</button>
+                <button title="Hapus 🗑️" onclick="hapusBarang(${i})">🗑️</button>
+            </div>
+        </div>`;
+    });
+}
+
+// --- Konfirmasi PLU ---
+function konfirmasiPlu(){
+    let plu=inputPlu.value.trim();
+    if(!plu) return;
+    kPlu.innerText="PLU: "+plu;
+    kNama.value="Barang "+plu;
+    kQty.value=0;
+    indexKonfirmasi=null;
+    modalKonfirmasi.style.display="flex";
+}
+
+function ubahQtyKonfirmasi(n){ kQty.value=parseInt(kQty.value||0)+n; }
+function tutupKonfirmasi(){ modalKonfirmasi.style.display="none"; }
+
+function simpanKonfirmasi(){
+    if(indexKonfirmasi===null){ // tambah baru
+        listSO.push({
+            tgl:tanggalDipilih,
+            rak:pilihRak.value,
+            plu:inputPlu.value.trim(),
+            nama:kNama.value.trim() || "Barang "+inputPlu.value.trim(),
+            qty:parseInt(kQty.value||0)
+        });
+    } else { // edit
+        listSO[indexKonfirmasi].qty=parseInt(kQty.value||0);
+        listSO[indexKonfirmasi].nama=kNama.value.trim();
+    }
+    inputPlu.value="";
+    simpanLocal();
+    renderList();
+    tutupKonfirmasi();
+}
+
+// --- Edit / Hapus Barang ---
+function editBarang(i){
+    indexKonfirmasi=i;
+    kPlu.innerText="PLU: "+listSO[i].plu;
+    kNama.value=listSO[i].nama;
+    kQty.value=listSO[i].qty;
+    modalKonfirmasi.style.display="flex";
+}
+function hapusBarang(i){
+    if(confirm("Hapus barang "+listSO[i].nama+"?")){
+        listSO.splice(i,1);
+        simpanLocal();
+        renderList();
+    }
+}
+
+// --- Cetak Laporan ---
+function cetakLaporan(){
+    if(listSO.filter(b=>b.tgl==tanggalDipilih).length==0){
+        return alert("Tidak ada barang untuk dicetak!");
+    }
+    simpanLocal();
+    let html=`<table>
+        <tr><th>PLU</th><th>Nama Barang</th><th>Rak</th><th>Qty</th></tr>`;
+    listSO.filter(b=>b.tgl==tanggalDipilih).forEach(b=>{
+        html+=`<tr>
+            <td>${b.plu}</td>
+            <td>${b.nama}</td>
+            <td>${b.rak}</td>
+            <td>${b.qty}</td>
+        </tr>`;
+    });
+    html+="</table>";
+    laporanContent.innerHTML=html;
+    laporanModal.style.display="flex";
+}
+
+function tutupLaporan(){
+    laporanModal.style.display="none";
+}
+
+// --- LocalStorage ---
+function simpanLocal(){
+    localStorage.setItem("listSO",JSON.stringify(listSO));
+}
+</script>
+
+</body>
+</html>
